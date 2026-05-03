@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ruta Clara | Pico y Placa Colombia</title>
+  <meta name="description" content="Consulta amigable de pico y placa en Colombia con mapa de ayuda vial, estaciones de servicio, hospitales, bomberos y policía." />
+
+  <!-- Fuentes e íconos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Leaflet: mapa sin API key -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQdWOgSACHo5g1KmYqN2P1WEz4YRKsc=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <style>
+    :root {
+      --bg: #07130f;
+      --bg-2: #0d2019;
+      --panel: rgba(255, 255, 255, 0.08);
+      --panel-strong: rgba(255, 255, 255, 0.14);
+      --text: #f4fff9;
+      --muted: #b7c8c0;
+      --brand: #7dffb2;
+      --brand-2: #f7d85d;
+      --danger: #ff6b6b;
+      --ok: #60ffa6;
+      --warning: #ffd166;
+      --card: #ffffff;
+      --ink: #14231d;
+      --ink-muted: #5c7067;
+      --radius: 28px;
+      --shadow: 0 24px 80px rgba(0,0,0,.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(125,255,178,.25), transparent 34rem),
+        radial-gradient(circle at 80% 10%, rgba(247,216,93,.18), transparent 30rem),
+        linear-gradient(145deg, var(--bg), #020604 72%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .page-shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      backdrop-filter: blur(18px);
+      background: rgba(7, 19, 15, .72);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      font-size: 1.15rem;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      color: #07130f;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow: 0 12px 30px rgba(125,255,178,.22);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-weight: 650;
+      font-size: .92rem;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.14);
+      color: var(--text) !important;
+    }
+
+    .hero {
+      padding: 54px 0 26px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .hero-copy {
+      min-height: 540px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 28px 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 9px;
+      color: var(--brand);
+      background: rgba(125,255,178,.12);
+      border: 1px solid rgba(125,255,178,.2);
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: .82rem;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(2.7rem, 7vw, 6.1rem);
+      line-height: .88;
+      letter-spacing: -0.08em;
+      margin: 0 0 22px;
+      max-width: 760px;
+    }
+
+    .hero-copy p {
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.18rem);
+      line-height: 1.75;
+      max-width: 660px;
+      margin: 0 0 26px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 20px;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+      font-family: inherit;
+      font-size: .95rem;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-primary {
+      color: #07130f;
+      background: linear-gradient(135deg, var(--brand), #e8ff89);
+      box-shadow: 0 18px 45px rgba(125,255,178,.22);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.16);
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 38px;
+      padding: 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06)),
+        radial-gradient(circle at top, rgba(125,255,178,.25), transparent 26rem);
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: var(--shadow);
+      min-height: 540px;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 30px;
+      pointer-events: none;
+    }
+
+    .today-panel {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 16px;
+    }
+
+    .ad-slot {
+      min-height: 92px;
+      border-radius: 24px;
+      border: 1px dashed rgba(255,255,255,.28);
+      background: rgba(255,255,255,.08);
+      color: rgba(244,255,249,.72);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+
+    .ad-slot small {
+      display: block;
+      margin-top: 6px;
+      color: rgba(244,255,249,.48);
+      font-weight: 600;
+    }
+
+    .today-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 26px;
+      background: rgba(2, 6, 4, .46);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .today-title h2 {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+      letter-spacing: -.03em;
+    }
+
+    .today-title p { margin: 0; color: var(--muted); font-size: .86rem; }
+
+    .city-pill {
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(125,255,178,.14);
+      color: var(--brand);
+      font-weight: 900;
+      font-size: .78rem;
+      white-space: nowrap;
+    }
+
+    .today-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .today-card {
+      border-radius: 26px;
+      padding: 18px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .today-card span {
+      display: block;
+      color: rgba(244,255,249,.65);
+      font-size: .76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 9px;
+    }
+
+    .digits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .digit {
+      width: 36px;
+      height: 36px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      font-weight: 950;
+      background: linear-gradient(135deg, var(--brand-2), #fff3b3);
+      color: #151203;
+    }
+
+    .metric {
+      font-size: 1.45rem;
+      font-weight: 950;
+      letter-spacing: -.04em;
+    }
+
+    .plate-mockup {
+      margin-top: 6px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #ffe45f, #fff7aa);
+      color: #111;
+      padding: 24px;
+      text-align: center;
+      box-shadow: inset 0 -8px 0 rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.25);
+    }
+
+    .plate-mockup .plate-country {
+      font-size: .76rem;
+      font-weight: 900;
+      letter-spacing: .1em;
+      color: #2c2c2c;
+      text-transform: uppercase;
+    }
+
+    .plate-mockup .plate-number {
+      font-size: clamp(2.8rem, 7vw, 4.8rem);
+      font-weight: 950;
+      letter-spacing: .05em;
+      line-height: 1;
+      margin: 10px 0 4px;
+    }
+
+    .consulta-plate-box {
+      margin-top: 16px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #ffe45f, #fff7aa);
+      color: #111;
+      padding: 24px;
+      text-align: center;
+      box-shadow: inset 0 -8px 0 rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.25);
+    }
+
+    .consulta-plate-country {
+      font-size: .76rem;
+      font-weight: 900;
+      letter-spacing: .16em;
+      color: #2c2c2c;
+      text-transform: uppercase;
+    }
+
+    .consulta-plate-number {
+      font-size: clamp(2.5rem, 7vw, 4.8rem);
+      font-weight: 950;
+      letter-spacing: .05em;
+      line-height: 1;
+      margin: 10px 0 8px;
+      word-break: break-word;
+    }
+
+    .consulta-plate-footer {
+      font-size: .76rem;
+      font-weight: 900;
+      letter-spacing: .16em;
+      color: #2c2c2c;
+      text-transform: uppercase;
+    }
+
+    .plate-input {
+      font-size: 1.2rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .ad-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(12px);
+    }
+
+    .ad-modal.show { display: flex; }
+
+    .ad-modal-card {
+      width: min(500px, 100%);
+      border-radius: 30px;
+      padding: 24px;
+      background: #ffffff;
+      color: var(--ink);
+      text-align: center;
+      box-shadow: 0 30px 90px rgba(0,0,0,.38);
+    }
+
+    .ad-modal-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.55rem;
+      letter-spacing: -.04em;
+    }
+
+    .ad-modal-card p {
+      margin: 0 0 18px;
+      color: var(--ink-muted);
+      line-height: 1.55;
+    }
+
+    .ad-banner-demo {
+      min-height: 190px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #eafff1, #fff6cb);
+      border: 1px dashed #bcd6c5;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      margin-bottom: 18px;
+      color: #2d473d;
+      font-weight: 900;
+      line-height: 1.45;
+    }
+
+    .ad-progress {
+      height: 8px;
+      width: 100%;
+      border-radius: 999px;
+      background: #eef4f0;
+      overflow: hidden;
+      margin: 12px 0 18px;
+    }
+
+    .ad-progress span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      transform-origin: left;
+      animation: adLoad 1.2s ease forwards;
+    }
+
+    @keyframes adLoad {
+      from { transform: scaleX(.12); }
+      to { transform: scaleX(1); }
+    }
+
+    section { padding: 44px 0; }
+
+    .section-title {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1;
+      letter-spacing: -.065em;
+    }
+
+    .section-title p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.6;
+    }
+
+    .consultor {
+      display: grid;
+      grid-template-columns: .86fr 1.14fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .form-card, .result-card, .info-card, .map-card, .monet-card {
+      background: var(--card);
+      color: var(--ink);
+      border-radius: var(--radius);
+      box-shadow: 0 22px 60px rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.2);
+    }
+
+    .form-card { padding: 24px; position: sticky; top: 92px; }
+
+    .form-card h3, .result-card h3, .info-card h3, .map-card h3, .monet-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+      letter-spacing: -.04em;
+    }
+
+    .form-card p, .result-card p, .info-card p, .map-card p, .monet-card p {
+      color: var(--ink-muted);
+      line-height: 1.6;
+      margin: 0 0 18px;
+    }
+
+    label {
+      display: block;
+      color: var(--ink-muted);
+      font-weight: 850;
+      font-size: .84rem;
+      margin: 18px 0 8px;
+    }
+
+    select, input {
+      width: 100%;
+      border: 1px solid #d9e5df;
+      background: #f8fbf9;
+      color: var(--ink);
+      border-radius: 18px;
+      padding: 15px 15px;
+      font: inherit;
+      font-weight: 750;
+      outline: 0;
+    }
+
+    select:focus, input:focus {
+      border-color: #64da95;
+      box-shadow: 0 0 0 4px rgba(100,218,149,.16);
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .full-width { width: 100%; margin-top: 18px; }
+
+    .mini-note {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: #f3f7f5;
+      color: var(--ink-muted);
+      font-size: .86rem;
+      line-height: 1.5;
+    }
+
+    .result-card { padding: 24px; min-height: 300px; }
+
+    .empty-state {
+      min-height: 260px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #f7fbf8, #eef8f2);
+      border: 1px solid #e5efe9;
+      padding: 26px;
+    }
+
+    .empty-state i {
+      width: 70px;
+      height: 70px;
+      display: grid;
+      place-items: center;
+      border-radius: 24px;
+      background: #e8fff1;
+      color: #1b9650;
+      font-size: 1.6rem;
+      margin: 0 auto 14px;
+    }
+
+    .status-box {
+      border-radius: 24px;
+      padding: 20px;
+      color: #fff;
+      background: #14231d;
+      margin-bottom: 16px;
+    }
+
+    .status-box.ok { background: linear-gradient(135deg, #129a57, #0b5634); }
+    .status-box.danger { background: linear-gradient(135deg, #ec5252, #822323); }
+    .status-box.warning { background: linear-gradient(135deg, #f2af29, #8a5a00); }
+
+    .status-box .status-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .status-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.18);
+      font-size: 1.4rem;
+    }
+
+    .status-box h4 {
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      line-height: 1;
+      margin: 0;
+      letter-spacing: -.06em;
+    }
+
+    .status-box p { color: rgba(255,255,255,.78); margin: 0; }
+
+    .result-details {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .detail-chip {
+      border-radius: 20px;
+      padding: 14px;
+      background: #f5f9f7;
+      border: 1px solid #e4eee9;
+    }
+
+    .detail-chip small {
+      display: block;
+      color: var(--ink-muted);
+      font-weight: 850;
+      margin-bottom: 6px;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .detail-chip strong {
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .info-card { padding: 20px; }
+
+    .info-card .city-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .city-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: #eafff1;
+      color: #0b8f4c;
+      font-size: 1.2rem;
+    }
+
+    .schedule-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .schedule-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: #f5f9f7;
+      font-weight: 750;
+    }
+
+    .schedule-row.active {
+      background: #fff6cb;
+      outline: 2px solid #ffe36d;
+    }
+
+    .map-layout {
+      display: grid;
+      grid-template-columns: 1fr .38fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .map-card { overflow: hidden; }
+
+    .map-top {
+      padding: 22px 22px 0;
+    }
+
+    #map {
+      height: 560px;
+      width: 100%;
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+    }
+
+    .map-controls {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .filter-btn {
+      width: 100%;
+      min-height: 76px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 24px;
+      color: var(--text);
+      background: rgba(255,255,255,.1);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform .18s ease, background .18s ease;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      transform: translateY(-2px);
+      background: rgba(125,255,178,.18);
+    }
+
+    .filter-btn i {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 16px;
+      color: #07130f;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    }
+
+    .filter-btn strong { display: block; margin-bottom: 3px; }
+    .filter-btn span { color: var(--muted); font-size: .82rem; }
+
+    .monet-grid {
+      display: grid;
+      grid-template-columns: .78fr 1.22fr;
+      gap: 18px;
+    }
+
+    .monet-card { padding: 24px; }
+
+    .ad-preview {
+      min-height: 310px;
+      border-radius: 30px;
+      background:
+        linear-gradient(135deg, rgba(125,255,178,.14), rgba(247,216,93,.12)),
+        rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.14);
+      padding: 20px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+    }
+
+    .ad-preview h3 { margin: 0; }
+
+    .ad-placements {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .ad-placement {
+      border: 1px dashed rgba(255,255,255,.3);
+      border-radius: 22px;
+      padding: 16px;
+      color: rgba(244,255,249,.76);
+      background: rgba(255,255,255,.08);
+      min-height: 96px;
+    }
+
+    .footer {
+      padding: 34px 0 50px;
+      color: var(--muted);
+      border-top: 1px solid rgba(255,255,255,.08);
+      margin-top: 32px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .leaflet-popup-content-wrapper { border-radius: 18px; }
+    .leaflet-popup-content { font-family: Inter, sans-serif; }
+
+    @media (max-width: 980px) {
+      .hero, .consultor, .map-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy, .hero-card { min-height: auto; }
+      .form-card { position: static; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .map-controls { grid-template-columns: repeat(2, 1fr); }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell { width: min(100% - 22px, 1180px); }
+      .today-grid, .input-row, .result-details, .map-controls { grid-template-columns: 1fr; }
+      #map { height: 420px; }
+      .hero { padding-top: 30px; }
+      section { padding: 32px 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="page-shell nav-inner">
+      <a class="brand" href="#inicio" aria-label="Inicio Ruta Clara">
+        <span class="brand-mark"><i class="fa-solid fa-route"></i></span>
+        <span>Ruta Clara</span>
+      </a>
+      <nav class="nav-links" aria-label="Menú principal">
+        <a href="#consulta">Consultar placa</a>
+        <a href="#hoy">Pico y placa hoy</a>
+        <a href="#mapa">Mapa de ayuda</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <div class="page-shell hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><i class="fa-solid fa-bolt"></i> Consulta rápida para conductores en Colombia</span>
+        <h1>¿Tu carro puede salir hoy?</h1>
+        <p>
+          Una experiencia simple, visual y móvil para consultar pico y placa por ciudad, número de placa y fecha. Incluye un mapa de apoyo vial para encontrar servicios cercanos cuando el usuario necesita ayuda en ruta.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#consulta"><i class="fa-solid fa-magnifying-glass"></i> Consultar mi placa</a>
+          <a class="btn btn-secondary" href="#mapa"><i class="fa-solid fa-map-location-dot"></i> Ver mapa de ayuda</a>
+        </div>
+      </div>
+
+      <aside class="hero-card" aria-label="Resumen del pico y placa de hoy">
+        <div class="today-panel">
+          <div class="ad-slot">
+            Espacio publicitario principal
+            <small>Banner superior 970x250 / pauta de aseguradoras, parqueaderos o talleres</small>
+          </div>
+
+          <div class="today-title">
+            <div>
+              <h2>Pico y placa hoy</h2>
+              <p id="todayDateLabel">Cargando fecha...</p>
+            </div>
+            <span class="city-pill" id="heroCityPill">Bogotá</span>
+          </div>
+
+          <div class="today-grid">
+            <div class="today-card">
+              <span>Dígitos con restricción</span>
+              <div class="digits" id="heroRestrictedDigits"></div>
+            </div>
+            <div class="today-card">
+              <span>Horario</span>
+              <div class="metric" id="heroSchedule">--</div>
+            </div>
+          </div>
+
+          <div class="plate-mockup" aria-label="Ejemplo visual de placa">
+            <div class="plate-country">Colombia</div>
+            <div class="plate-number">ABC 123</div>
+            <div class="plate-country">Consulta antes de salir</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section id="consulta">
+      <div class="page-shell">
+        <div class="section-title">
+          <h2>Consulta tu placa</h2>
+          <p>La consulta empieza por la placa. Al enviar, se muestra publicidad antes de entregar el resultado.</p>
+        </div>
+
+        <div class="consultor">
+          <form class="form-card" id="plateForm">
+            <h3>Consulta rápida</h3>
+            <p>Ingresa tu placa y mira la vista previa en formato de placa colombiana.</p>
+
+            <label for="plateInput">Número de placa</label>
+            <input id="plateInput" class="plate-input" type="text" placeholder="Ej: ABC123" maxlength="8" autocomplete="off" required />
+
+            <div class="consulta-plate-box" aria-label="Vista previa de placa consultada">
+              <div class="consulta-plate-country">Colombia</div>
+              <div class="consulta-plate-number" id="consultaPlateNumber">ABC 123</div>
+              <div class="consulta-plate-footer">Consulta antes de salir</div>
+            </div>
+
+            <label for="citySelect">Ciudad</label>
+            <select id="citySelect" required>
+              <option value="bogota">Bogotá</option>
+              <option value="medellin">Medellín / Valle de Aburrá</option>
+              <option value="cali">Cali</option>
+            </select>
+
+            <div class="input-row">
+              <div>
+                <label for="vehicleType">Tipo</label>
+                <select id="vehicleType">
+                  <option value="carro">Carro particular</option>
+                  <option value="moto">Moto</option>
+                </select>
+              </div>
+              <div>
+                <label for="dateInput">Fecha</label>
+                <input id="dateInput" type="date" required />
+              </div>
+            </div>
+
+            <button class="btn btn-primary full-width" type="submit">
+              <i class="fa-solid fa-circle-check"></i>
+              Consultar pico y placa
+            </button>
+
+            <div class="mini-note">
+              <strong>Nota:</strong> antes del resultado se mostrará una pieza publicitaria. En producción puedes reemplazarla por Google AdSense o pauta directa.
+            </div>
+          </form>
+
+          <article class="result-card" id="resultCard">
+            <div class="empty-state">
+              <div>
+                <i class="fa-solid fa-id-card"></i>
+                <h3>Primero escribe tu placa</h3>
+                <p>La vista previa amarilla se actualizará automáticamente. Después de consultar, verás publicidad y luego el resultado.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="hoy">
+      <div class="page-shell">
+        <div class="section-title">
+          <h2>Menú inicial por ciudad</h2>
+          <p>Estas tarjetas muestran qué placas tienen restricción hoy o cuál es la regla activa según la ciudad seleccionada.</p>
+        </div>
+        <div class="cards-grid" id="cityCards"></div>
+      </div>
+    </section>
+
+    <section id="mapa">
+      <div class="page-shell">
+        <div class="section-title">
+          <h2>Mapa de ayuda en ruta</h2>
+          <p>Filtros para ubicar servicios útiles: gasolineras, talleres, policía, bomberos y hospitales. Los puntos actuales son de demostración.</p>
+        </div>
+
+        <div class="map-layout">
+          <article class="map-card">
+            <div class="map-top">
+              <h3>Servicios cercanos</h3>
+              <p>El mapa usa OpenStreetMap y puede evolucionar con geolocalización real, base de datos propia o Places API.</p>
+            </div>
+            <div id="map" role="application" aria-label="Mapa de servicios viales"></div>
+          </article>
+
+          <aside class="map-controls" aria-label="Filtros del mapa">
+            <button class="filter-btn active" data-filter="all" type="button"><i class="fa-solid fa-layer-group"></i><span><strong>Todos</strong><span>Mostrar servicios</span></span></button>
+            <button class="filter-btn" data-filter="gasolina" type="button"><i class="fa-solid fa-gas-pump"></i><span><strong>Gasolina</strong><span>Estaciones de servicio</span></span></button>
+            <button class="filter-btn" data-filter="taller" type="button"><i class="fa-solid fa-screwdriver-wrench"></i><span><strong>Ayuda vehículo</strong><span>Taller o grúa</span></span></button>
+            <button class="filter-btn" data-filter="policia" type="button"><i class="fa-solid fa-shield-halved"></i><span><strong>Policía</strong><span>Apoyo y seguridad</span></span></button>
+            <button class="filter-btn" data-filter="bomberos" type="button"><i class="fa-solid fa-fire-extinguisher"></i><span><strong>Bomberos</strong><span>Emergencias</span></span></button>
+            <button class="filter-btn" data-filter="hospital" type="button"><i class="fa-solid fa-hospital"></i><span><strong>Hospitales</strong><span>Atención médica</span></span></button>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="page-shell footer-inner">
+      <span>© 2026 Ruta Clara. Prototipo front-end.</span>
+      <span>Información vial de referencia. Validar siempre con fuentes oficiales.</span>
+    </div>
+  </footer>
+
+  <div class="ad-modal" id="adModal" aria-hidden="true" role="dialog" aria-labelledby="adTitle">
+    <div class="ad-modal-card">
+      <h3 id="adTitle">Publicidad</h3>
+      <p>Antes de ver el resultado de tu consulta, revisa este espacio publicitario.</p>
+
+      <div class="ad-banner-demo">
+        Espacio publicitario premium<br>
+        Seguro vehicular · Taller aliado · Asistencia en carretera
+      </div>
+
+      <div class="ad-progress" aria-hidden="true"><span></span></div>
+
+      <button class="btn btn-primary" id="continueAfterAd" type="button">
+        Continuar a mi resultado
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ================================
+    // CONFIGURACIÓN CENTRAL DE REGLAS
+    // ================================
+    // Importante: en producción, este objeto debería llegar desde un backend o CMS.
+    const RULES = {
+      bogota: {
+        name: "Bogotá",
+        center: [4.711, -74.0721],
+        zoom: 12,
+        vehicleSupport: ["carro"],
+        schedule: "6:00 a. m. - 9:00 p. m.",
+        note: "La regla base se calcula por día par o impar. Fines de semana no aplica pico y placa urbano, salvo medidas regionales o especiales.",
+        type: "parityCanCirculate",
+        weekdaysOnly: true,
+        getRestrictedDigits(date) {
+          const day = date.getDate();
+          // En Bogotá la fuente oficial publica qué placas pueden circular.
+          // Días impares pueden circular 1-5; restringidas 6-0.
+          // Días pares pueden circular 6-0; restringidas 1-5.
+          if (day % 2 === 0) return ["1", "2", "3", "4", "5"];
+          return ["6", "7", "8", "9", "0"];
+        }
+      },
+      medellin: {
+        name: "Medellín / Valle de Aburrá",
+        center: [6.2442, -75.5812],
+        zoom: 12,
+        vehicleSupport: ["carro", "moto"],
+        schedule: "5:00 a. m. - 8:00 p. m.",
+        note: "Para carros se usa el último dígito. Para motos, la regla municipal puede aplicar con el primer número; este prototipo consulta por último dígito para mantener una experiencia simple.",
+        type: "weekdayDigits",
+        weekdaysOnly: true,
+        digitsByWeekday: {
+          1: ["1", "7"],
+          2: ["0", "3"],
+          3: ["4", "6"],
+          4: ["5", "9"],
+          5: ["2", "8"]
+        },
+        getRestrictedDigits(date) {
+          return this.digitsByWeekday[date.getDay()] || [];
+        }
+      },
+      cali: {
+        name: "Cali",
+        center: [3.4516, -76.5320],
+        zoom: 12,
+        vehicleSupport: ["carro"],
+        schedule: "6:00 a. m. - 7:00 p. m.",
+        note: "Rotación cargada para el primer semestre de 2026. Fines de semana no aplica la medida ordinaria.",
+        type: "weekdayDigits",
+        weekdaysOnly: true,
+        digitsByWeekday: {
+          1: ["1", "2"],
+          2: ["3", "4"],
+          3: ["5", "6"],
+          4: ["7", "8"],
+          5: ["9", "0"]
+        },
+        getRestrictedDigits(date) {
+          return this.digitsByWeekday[date.getDay()] || [];
+        }
+      }
+    };
+
+    const WEEKDAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
+    const SERVICES = {
+      bogota: [
+        { type: "gasolina", name: "Estación de servicio Calle 100", coords: [4.6869, -74.0547], detail: "Gasolina y tienda 24h" },
+        { type: "taller", name: "Taller rápido Chapinero", coords: [4.6486, -74.0631], detail: "Mecánica básica y asistencia" },
+        { type: "policia", name: "CAI Parque 93", coords: [4.6766, -74.0486], detail: "Apoyo de seguridad" },
+        { type: "bomberos", name: "Bomberos Central", coords: [4.6097, -74.0817], detail: "Emergencias y rescate" },
+        { type: "hospital", name: "Hospital Universitario San Ignacio", coords: [4.6286, -74.0647], detail: "Atención médica" }
+      ],
+      medellin: [
+        { type: "gasolina", name: "EDS El Poblado", coords: [6.2104, -75.5704], detail: "Gasolina y aire" },
+        { type: "taller", name: "Taller Laureles", coords: [6.2449, -75.5906], detail: "Mecánica general" },
+        { type: "policia", name: "Estación Policía Centro", coords: [6.2518, -75.5636], detail: "Apoyo de seguridad" },
+        { type: "bomberos", name: "Bomberos Medellín", coords: [6.2311, -75.5793], detail: "Emergencias" },
+        { type: "hospital", name: "Hospital General de Medellín", coords: [6.2342, -75.5733], detail: "Atención médica" }
+      ],
+      cali: [
+        { type: "gasolina", name: "EDS Norte Cali", coords: [3.4777, -76.5202], detail: "Combustible y servicios" },
+        { type: "taller", name: "Taller San Fernando", coords: [3.4298, -76.5449], detail: "Revisión y mecánica" },
+        { type: "policia", name: "Policía Metropolitana", coords: [3.4511, -76.5320], detail: "Apoyo de seguridad" },
+        { type: "bomberos", name: "Bomberos Cali", coords: [3.4389, -76.5225], detail: "Emergencias" },
+        { type: "hospital", name: "Hospital Universitario del Valle", coords: [3.4304, -76.5455], detail: "Atención médica" }
+      ]
+    };
+
+    const categoryIcons = {
+      gasolina: "fa-gas-pump",
+      taller: "fa-screwdriver-wrench",
+      policia: "fa-shield-halved",
+      bomberos: "fa-fire-extinguisher",
+      hospital: "fa-hospital"
+    };
+
+    const form = document.getElementById("plateForm");
+    const citySelect = document.getElementById("citySelect");
+    const vehicleType = document.getElementById("vehicleType");
+    const dateInput = document.getElementById("dateInput");
+    const plateInput = document.getElementById("plateInput");
+    const resultCard = document.getElementById("resultCard");
+    const cityCards = document.getElementById("cityCards");
+    const consultaPlateNumber = document.getElementById("consultaPlateNumber");
+    const adModal = document.getElementById("adModal");
+    const continueAfterAd = document.getElementById("continueAfterAd");
+
+    let pendingResultData = null;
+
+    const today = new Date();
+    dateInput.valueAsDate = today;
+
+    function formatDate(date) {
+      return new Intl.DateTimeFormat("es-CO", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }).format(date);
+    }
+
+    function parseLocalDate(dateValue) {
+      const [year, month, day] = dateValue.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function cleanPlate(plate) {
+      return plate.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+    }
+
+    function formatPlateDisplay(plate) {
+      const clean = cleanPlate(plate);
+      if (!clean) return "ABC 123";
+      if (clean.length > 3) return `${clean.slice(0, 3)} ${clean.slice(3)}`;
+      return clean;
+    }
+
+    function getLastDigit(plate) {
+      const normalized = cleanPlate(plate);
+      const match = normalized.match(/([0-9])(?!.*[0-9])/);
+      return match ? match[1] : null;
+    }
+
+    function isWeekend(date) {
+      return date.getDay() === 0 || date.getDay() === 6;
+    }
+
+    function getRuleStatus(cityKey, date) {
+      const rule = RULES[cityKey];
+      const weekend = isWeekend(date);
+      const restrictedDigits = rule.weekdaysOnly && weekend ? [] : rule.getRestrictedDigits(date);
+      const applies = restrictedDigits.length > 0;
+
+      return {
+        city: rule.name,
+        schedule: applies ? rule.schedule : "No aplica",
+        restrictedDigits,
+        applies,
+        weekday: WEEKDAYS[date.getDay()],
+        note: applies ? rule.note : "Hoy no aplica la medida ordinaria en esta ciudad. Revisa si existe pico y placa regional, evento especial o restricción temporal."
+      };
+    }
+
+    function renderDigits(container, digits) {
+      container.innerHTML = "";
+      if (!digits.length) {
+        container.innerHTML = `<span style="color: rgba(244,255,249,.8); font-weight: 850;">No aplica</span>`;
+        return;
+      }
+      digits.forEach(digit => {
+        const span = document.createElement("span");
+        span.className = "digit";
+        span.textContent = digit;
+        container.appendChild(span);
+      });
+    }
+
+    function updateHero() {
+      const cityKey = citySelect.value || "bogota";
+      const selectedDate = dateInput.value ? parseLocalDate(dateInput.value) : new Date();
+      const status = getRuleStatus(cityKey, selectedDate);
+
+      document.getElementById("todayDateLabel").textContent = formatDate(selectedDate);
+      document.getElementById("heroCityPill").textContent = status.city;
+      document.getElementById("heroSchedule").textContent = status.schedule;
+      renderDigits(document.getElementById("heroRestrictedDigits"), status.restrictedDigits);
+    }
+
+    function renderCityCards() {
+      const date = dateInput.value ? parseLocalDate(dateInput.value) : new Date();
+      cityCards.innerHTML = "";
+
+      Object.keys(RULES).forEach(cityKey => {
+        const rule = RULES[cityKey];
+        const status = getRuleStatus(cityKey, date);
+        const activeWeekday = date.getDay();
+        let scheduleRows = "";
+
+        if (rule.digitsByWeekday) {
+          scheduleRows = Object.entries(rule.digitsByWeekday).map(([day, digits]) => `
+            <div class="schedule-row ${Number(day) === activeWeekday ? "active" : ""}">
+              <span>${WEEKDAYS[Number(day)]}</span>
+              <strong>${digits.join(" - ")}</strong>
+            </div>
+          `).join("");
+        } else {
+          scheduleRows = `
+            <div class="schedule-row ${activeWeekday >= 1 && activeWeekday <= 5 ? "active" : ""}">
+              <span>${status.weekday}</span>
+              <strong>${status.restrictedDigits.length ? status.restrictedDigits.join(" - ") : "No aplica"}</strong>
+            </div>
+            <div class="schedule-row"><span>Regla</span><strong>Par / impar</strong></div>
+          `;
+        }
+
+        const digitsHTML = status.restrictedDigits.length
+          ? status.restrictedDigits.map(d => `<span class="digit">${d}</span>`).join("")
+          : `<strong style="color:#557066;">No aplica hoy</strong>`;
+
+        const card = document.createElement("article");
+        card.className = "info-card";
+        card.innerHTML = `
+          <div class="city-head">
+            <div>
+              <h3>${status.city}</h3>
+              <p>${status.weekday} · ${status.schedule}</p>
+            </div>
+            <div class="city-icon"><i class="fa-solid fa-city"></i></div>
+          </div>
+          <label style="margin-top:0;">Placas con restricción</label>
+          <div class="digits">${digitsHTML}</div>
+          <div class="schedule-list">${scheduleRows}</div>
+        `;
+        cityCards.appendChild(card);
+      });
+    }
+
+    function renderResult({ plate, digit, cityKey, date }) {
+      const status = getRuleStatus(cityKey, date);
+      const hasRestriction = status.restrictedDigits.includes(digit);
+      const normalizedPlate = cleanPlate(plate);
+      const displayPlate = formatPlateDisplay(normalizedPlate);
+
+      let mode = "ok";
+      let icon = "fa-circle-check";
+      let title = "Puedes circular";
+      let description = `La placa ${displayPlate} termina en ${digit} y no está dentro de los dígitos restringidos para ${status.city}.`;
+
+      if (!status.applies) {
+        mode = "warning";
+        icon = "fa-calendar-day";
+        title = "No aplica la medida ordinaria";
+        description = `Para ${status.city}, en la fecha seleccionada no hay pico y placa urbano ordinario cargado en este prototipo.`;
+      } else if (hasRestriction) {
+        mode = "danger";
+        icon = "fa-triangle-exclamation";
+        title = "Tienes pico y placa";
+        description = `La placa ${displayPlate} termina en ${digit}, uno de los dígitos restringidos para ${status.city}.`;
+      }
+
+      resultCard.innerHTML = `
+        <div class="consulta-plate-box" style="margin-bottom:16px;">
+          <div class="consulta-plate-country">Colombia</div>
+          <div class="consulta-plate-number">${displayPlate}</div>
+          <div class="consulta-plate-footer">Consulta antes de salir</div>
+        </div>
+
+        <div class="status-box ${mode}">
+          <div class="status-top">
+            <div>
+              <h4>${title}</h4>
+              <p>${description}</p>
+            </div>
+            <div class="status-icon"><i class="fa-solid ${icon}"></i></div>
+          </div>
+        </div>
+
+        <div class="result-details">
+          <div class="detail-chip">
+            <small>Ciudad</small>
+            <strong>${status.city}</strong>
+          </div>
+          <div class="detail-chip">
+            <small>Último dígito</small>
+            <strong>${digit}</strong>
+          </div>
+          <div class="detail-chip">
+            <small>Horario</small>
+            <strong>${status.schedule}</strong>
+          </div>
+        </div>
+
+        <div class="mini-note" style="margin-top:16px;">
+          <strong>Recomendación:</strong> ${status.note}
+        </div>
+
+        <div class="ad-slot" style="margin-top:16px; color:#557066; border-color:#d5e5dc; background:#f7fbf8;">
+          Anuncio contextual después de la consulta
+          <small style="color:#7d9188;">Ej: parqueadero cercano, seguro, asistencia vial o mantenimiento preventivo</small>
+        </div>
+      `;
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const plate = cleanPlate(plateInput.value);
+      const digit = getLastDigit(plate);
+
+      if (!digit) {
+        resultCard.innerHTML = `
+          <div class="status-box danger">
+            <div class="status-top">
+              <div>
+                <h4>Placa inválida</h4>
+                <p>Ingresa una placa válida que tenga al menos un número. Ejemplo: ABC123.</p>
+              </div>
+              <div class="status-icon"><i class="fa-solid fa-xmark"></i></div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      pendingResultData = {
+        plate,
+        digit,
+        cityKey: citySelect.value,
+        date: parseLocalDate(dateInput.value)
+      };
+
+      adModal.classList.add("show");
+      adModal.setAttribute("aria-hidden", "false");
+    });
+
+    continueAfterAd.addEventListener("click", () => {
+      adModal.classList.remove("show");
+      adModal.setAttribute("aria-hidden", "true");
+
+      if (pendingResultData) {
+        renderResult(pendingResultData);
+        pendingResultData = null;
+        resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+
+    [citySelect, dateInput, vehicleType].forEach(element => {
+      element.addEventListener("change", () => {
+        updateHero();
+        renderCityCards();
+        setMapCity(citySelect.value);
+      });
+    });
+
+    plateInput.addEventListener("input", () => {
+      const cleaned = cleanPlate(plateInput.value);
+      plateInput.value = cleaned;
+      consultaPlateNumber.textContent = formatPlateDisplay(cleaned);
+    });
+
+    // ================================
+    // MAPA
+    // ================================
+    let map;
+    let markerLayer;
+
+    function initMap() {
+      map = L.map("map", { scrollWheelZoom: true }).setView(RULES.bogota.center, RULES.bogota.zoom);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      markerLayer = L.layerGroup().addTo(map);
+      renderMarkers("bogota", "all");
+    }
+
+    function markerHTML(type) {
+      return `
+        <div style="width:38px;height:38px;border-radius:14px;background:#7dffb2;display:grid;place-items:center;color:#07130f;box-shadow:0 10px 24px rgba(0,0,0,.25);border:2px solid white;">
+          <i class="fa-solid ${categoryIcons[type] || "fa-location-dot"}"></i>
+        </div>
+      `;
+    }
+
+    function renderMarkers(cityKey, filter = "all") {
+      markerLayer.clearLayers();
+      const points = SERVICES[cityKey] || [];
+      const visiblePoints = filter === "all" ? points : points.filter(point => point.type === filter);
+
+      visiblePoints.forEach(point => {
+        const icon = L.divIcon({ html: markerHTML(point.type), className: "custom-marker", iconSize: [38, 38], iconAnchor: [19, 19] });
+        L.marker(point.coords, { icon })
+          .bindPopup(`<strong>${point.name}</strong><br>${point.detail}<br><small>Categoría: ${point.type}</small>`)
+          .addTo(markerLayer);
+      });
+    }
+
+    function setMapCity(cityKey) {
+      if (!map) return;
+      map.setView(RULES[cityKey].center, RULES[cityKey].zoom);
+      const activeFilter = document.querySelector(".filter-btn.active")?.dataset.filter || "all";
+      renderMarkers(cityKey, activeFilter);
+    }
+
+    document.querySelectorAll(".filter-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        renderMarkers(citySelect.value, button.dataset.filter);
+      });
+    });
+
+    // Inicialización
+    updateHero();
+    renderCityCards();
+    initMap();
+  </script>
+</body>
+</html>
