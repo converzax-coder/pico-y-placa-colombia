@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Política de Privacidad | Ruta Clara</title>
+  <meta name="description" content="Política de privacidad de Ruta Clara, sitio de consulta informativa de pico y placa en Colombia." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --text: #111111;
+      --muted: #667085;
+      --line: #e6e8ec;
+      --yellow: #ffd633;
+      --yellow-soft: #fff4a9;
+      --blue: #1e3a8a;
+      --bg-soft: #f8fafc;
+      --shadow: 0 18px 50px rgba(16, 24, 40, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--blue);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page-shell {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-weight: 900;
+      font-size: 1.45rem;
+      letter-spacing: -.05em;
+      color: #111;
+    }
+
+    .brand-mark {
+      width: 58px;
+      height: 58px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--yellow), var(--yellow-soft));
+      color: #111;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+      border: 2px solid #f0c800;
+      font-size: 1.25rem;
+    }
+
+    .back-link {
+      color: #111;
+      font-weight: 850;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .hero {
+      padding: 56px 0 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #111;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: .82rem;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(16,24,40,.04);
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 7vw, 4.8rem);
+      line-height: .95;
+      letter-spacing: -.075em;
+      margin: 0 0 18px;
+      color: #111;
+    }
+
+    .intro {
+      color: var(--muted);
+      font-size: 1.08rem;
+      max-width: 760px;
+      margin: 0;
+    }
+
+    .content-card {
+      margin: 28px 0 44px;
+      padding: clamp(22px, 4vw, 38px);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      margin: 34px 0 10px;
+      font-size: 1.45rem;
+      letter-spacing: -.04em;
+      color: #111;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: #344054;
+    }
+
+    ul {
+      margin: 8px 0 18px;
+      padding-left: 22px;
+      color: #344054;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .notice {
+      padding: 16px;
+      border-radius: 18px;
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      color: #344054;
+      margin: 18px 0;
+    }
+
+    .highlight {
+      padding: 16px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #fff8cc, #ffffff);
+      border: 1px solid #f0d86d;
+      color: #111;
+      font-weight: 700;
+      margin: 18px 0;
+    }
+
+    .footer {
+      padding: 24px 0 36px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      background: #fff;
+      font-size: .9rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    @media (max-width: 640px) {
+      .brand {
+        font-size: 1.25rem;
+      }
+
+      .brand-mark {
+        width: 52px;
+        height: 52px;
+      }
+
+      .nav-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="navbar">
+    <div class="page-shell nav-inner">
+      <a class="brand" href="index.html" aria-label="Volver al inicio de Ruta Clara">
+        <span class="brand-mark"><i class="fa-solid fa-route"></i></span>
+        <span>Ruta Clara</span>
+      </a>
+
+      <a class="back-link" href="index.html">
+        <i class="fa-solid fa-arrow-left"></i>
+        Volver al inicio
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="page-shell">
+        <span class="eyebrow">
+          <i class="fa-solid fa-shield-halved"></i>
+          Información legal y privacidad
+        </span>
+
+        <h1>Política de Privacidad</h1>
+
+        <p class="intro">
+          Esta Política de Privacidad explica cómo Ruta Clara trata la información relacionada con el uso del sitio web de consulta informativa de pico y placa en Colombia.
+        </p>
+      </div>
+    </section>
+
+    <section class="page-shell">
+      <article class="content-card">
+        <h2>1. Identificación del sitio</h2>
+
+        <p>
+          Ruta Clara es un sitio web informativo que permite consultar, de forma orientativa, reglas de pico y placa por ciudad, fecha y número de placa.
+        </p>
+
+        <p>
+          El sitio no pertenece a una autoridad pública de tránsito ni reemplaza la información oficial publicada por alcaldías, secretarías de movilidad u otras entidades competentes.
+        </p>
+
+        <div class="highlight">
+          Responsable del sitio: Ruta Clara.  
+          Correo de contacto: <strong>CAMBIA-ESTE-CORREO@ejemplo.com</strong>
+        </div>
+
+        <h2>2. Información que puede tratar el sitio</h2>
+
+        <p>
+          En la versión actual, Ruta Clara permite ingresar una placa para hacer una consulta local dentro del navegador. La placa ingresada se usa para identificar el último dígito y mostrar un resultado orientativo sobre la restricción aplicable.
+        </p>
+
+        <p>
+          En esta versión del sitio:
+        </p>
+
+        <ul>
+          <li>No se solicita registro de usuario.</li>
+          <li>No se solicita contraseña.</li>
+          <li>No se solicita documento de identidad.</li>
+          <li>No se solicita dirección de residencia.</li>
+          <li>No se almacena una base de datos de placas consultadas.</li>
+          <li>No se vende información personal de los usuarios.</li>
+        </ul>
+
+        <p>
+          Si en el futuro se incorpora una base de datos, formularios de contacto, analítica avanzada, cuentas de usuario o servicios personalizados, esta Política de Privacidad deberá actualizarse.
+        </p>
+
+        <h2>3. Finalidades del tratamiento</h2>
+
+        <p>
+          La información que el usuario ingresa o que se genera durante la navegación puede ser utilizada para las siguientes finalidades:
+        </p>
+
+        <ul>
+          <li>Permitir la consulta orientativa de pico y placa.</li>
+          <li>Mostrar una vista previa visual de la placa ingresada.</li>
+          <li>Mejorar la experiencia de navegación del sitio.</li>
+          <li>Prevenir abusos, errores técnicos o usos indebidos.</li>
+          <li>Mostrar publicidad o contenido patrocinado, cuando este servicio sea activado.</li>
+          <li>Cumplir obligaciones legales o requerimientos de autoridades competentes, cuando corresponda.</li>
+        </ul>
+
+        <h2>4. Uso de cookies y tecnologías similares</h2>
+
+        <p>
+          Ruta Clara puede utilizar cookies o tecnologías similares para mejorar la experiencia de navegación, medir el uso del sitio, recordar preferencias técnicas y permitir la visualización de publicidad.
+        </p>
+
+        <p>
+          Las cookies son pequeños archivos que se almacenan en el navegador del usuario y que permiten reconocer ciertas preferencias o interacciones con un sitio web.
+        </p>
+
+        <p>
+          El usuario puede configurar su navegador para bloquear, eliminar o limitar el uso de cookies. Sin embargo, algunas funciones del sitio podrían verse afectadas.
+        </p>
+
+        <h2>5. Publicidad de Google AdSense y terceros</h2>
+
+        <p>
+          Ruta Clara podrá mostrar anuncios mediante Google AdSense u otras redes publicitarias. En ese caso, terceros, incluido Google, pueden utilizar cookies para publicar anuncios basados en visitas anteriores del usuario a este sitio web o a otros sitios de internet.
+        </p>
+
+        <p>
+          El uso de cookies publicitarias permite que Google y sus socios muestren anuncios personalizados o contextuales a los usuarios.
+        </p>
+
+        <p>
+          Los usuarios pueden desactivar la publicidad personalizada de Google visitando:
+        </p>
+
+        <ul>
+          <li>
+            <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">
+              Configuración de anuncios de Google
+            </a>
+          </li>
+        </ul>
+
+        <p>
+          También pueden consultar opciones de exclusión de otros proveedores de publicidad en:
+        </p>
+
+        <ul>
+          <li>
+            <a href="https://www.aboutads.info/" target="_blank" rel="noopener noreferrer">
+              About Ads
+            </a>
+          </li>
+        </ul>
+
+        <div class="notice">
+          Google exige que los sitios que muestran anuncios informen a los usuarios sobre el uso de cookies, proveedores externos y opciones para desactivar publicidad personalizada.
+        </div>
+
+        <h2>6. Herramientas de analítica</h2>
+
+        <p>
+          Ruta Clara podrá utilizar herramientas de analítica web para conocer estadísticas generales de uso, como páginas visitadas, duración aproximada de la sesión, tipo de dispositivo, navegador o ubicación aproximada.
+        </p>
+
+        <p>
+          Estas herramientas ayudan a mejorar el sitio, pero no deben utilizarse para identificar directamente a una persona sin base legal o autorización aplicable.
+        </p>
+
+        <h2>7. Enlaces a sitios de terceros</h2>
+
+        <p>
+          El sitio puede incluir enlaces a fuentes oficiales, servicios de publicidad, páginas de configuración de privacidad, redes publicitarias u otros sitios externos.
+        </p>
+
+        <p>
+          Ruta Clara no controla las prácticas de privacidad de esos sitios. El usuario debe revisar las políticas de privacidad de cada tercero que visite.
+        </p>
+
+        <h2>8. Protección de datos personales en Colombia</h2>
+
+        <p>
+          En Colombia, la protección de datos personales se rige, entre otras normas, por la Ley 1581 de 2012 y sus normas complementarias. La Superintendencia de Industria y Comercio es la autoridad nacional en materia de protección de datos personales.
+        </p>
+
+        <p>
+          Cuando aplique, los usuarios podrán solicitar información sobre el tratamiento de sus datos, pedir actualización, corrección o eliminación, y presentar solicitudes relacionadas con el uso de su información.
+        </p>
+
+        <h2>9. Derechos de los usuarios</h2>
+
+        <p>
+          Cuando el sitio trate datos personales, los usuarios podrán ejercer los derechos reconocidos por la normativa aplicable, incluyendo:
+        </p>
+
+        <ul>
+          <li>Conocer qué datos personales son tratados.</li>
+          <li>Solicitar actualización o corrección de información.</li>
+          <li>Solicitar eliminación de datos cuando sea procedente.</li>
+          <li>Revocar autorizaciones cuando corresponda.</li>
+          <li>Presentar consultas o reclamos ante el responsable del sitio.</li>
+        </ul>
+
+        <p>
+          Para ejercer estos derechos, el usuario puede escribir al correo:
+          <strong>CAMBIA-ESTE-CORREO@ejemplo.com</strong>
+        </p>
+
+        <h2>10. Seguridad de la información</h2>
+
+        <p>
+          Ruta Clara adoptará medidas razonables para proteger la información frente a accesos no autorizados, pérdida, alteración o uso indebido.
+        </p>
+
+        <p>
+          Sin embargo, ningún sistema en internet es completamente seguro. Por eso, se recomienda a los usuarios no ingresar datos sensibles en formularios no solicitados o canales externos no verificados.
+        </p>
+
+        <h2>11. Menores de edad</h2>
+
+        <p>
+          Ruta Clara es un sitio informativo de consulta vial. No está diseñado para recopilar intencionalmente información personal de niñas, niños o adolescentes.
+        </p>
+
+        <p>
+          Si se identifica que se ha recibido información personal de un menor sin autorización válida, se podrán tomar medidas para eliminarla cuando corresponda.
+        </p>
+
+        <h2>12. Cambios en esta Política de Privacidad</h2>
+
+        <p>
+          Ruta Clara podrá modificar esta Política de Privacidad para reflejar cambios legales, técnicos, operativos o comerciales.
+        </p>
+
+        <p>
+          La versión actualizada estará disponible en esta misma página.
+        </p>
+
+        <h2>13. Fecha de actualización</h2>
+
+        <p>
+          Última actualización: <strong>5 de mayo de 2026</strong>.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="page-shell footer-inner">
+      <span>© 2026 Ruta Clara. Prototipo front-end.</span>
+      <span>
+        <a href="index.html">Inicio</a>
+      </span>
+    </div>
+  </footer>
+</body>
+</html>
